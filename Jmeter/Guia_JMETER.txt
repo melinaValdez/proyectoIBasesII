@@ -15,13 +15,3 @@ todo deberia ya estar configurado para correr las pruebas y conectarse correctam
 connection string de sql server: jdbc:sqlserver://25.6.236.207:1233;databaseName=VideojuegosDB;
 
 en el monolitico mongo -> lo de user defined variables es para definir las variables que se usan para conectarse al mongo monolitico
-
-en el cluster -> en teoria todo deberia estar exactamente igual que al del monolitico, solo que en las user defined variables los datos para conectarse deberian ser los del cluster
-
-todas las queries ya estan excepto la del cluster de resolverlo con 1 shard, con 2 shards, y con 3 shards -> para hacer lo de jmeter para el cluster con 1 shard, 2 shards, 3 shards, solo ocupan hacer un find en el query que busque registros para ese o esos shards -> es decir, para 1 shard que sea un query que busque solo de ese shard, para 2 shards que busque de esas 2 shards nada mas, y para 3 shards que busque de las 3 shards
-
-para hacer lo de 50% y 100% del cluster funcionando -> solo corran las pruebas con la mitad de las shards desactivadas y luego con ninguna shard desactivada respectivamente
-
-cuando corren una prueba y pusieron lo del filename, los datos se graban automaticamente en el csv que pusieron -> al correr esa prueba de nuevo les va a pedir si quieren remplazar o hacer append, escojan hacer append, porque así se sigue escribiendo todo en el mismo csv, luego solo ocupan promediar esos resultados en un grafico en excel y ya -> si le dan replace entonces todo se sobreescribe entonces no escojan esa opcion
-
-no ocupan descargar ningun driver para el jmeter porque yo ya le metí los de sql server y mongo y ya funcionan
