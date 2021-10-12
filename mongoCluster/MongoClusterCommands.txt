@@ -1,0 +1,330 @@
+Mongo Cluster para Videojuegos
+--------------------------------
+
+// crear la red
+docker network ls
+docker network rm mongonet
+docker network create --driver bridge --subnet 11.0.0.32/26 mongonet
+
+//Crear volumenes para config
+docker volume create volConfig1
+docker volume create volConfig2
+docker volume create volConfig3
+
+
+// iniciar un servidor de configuración en modo configserver indicando la red y el nombre del replica set
+
+docker run -d -p 27019:27019 --net mongonet --ip 11.0.0.35 -v volConfig1:/data/db --name config1 mongo mongod --port 27019 --configsvr --replSet "RPSConfig" --dbpath /data/configdb
+docker run -d -p 27018:27018 --net mongonet --ip 11.0.0.34 -v volConfig2:/data/db --name config2 mongo mongod --port 27018 --configsvr --replSet "RPSConfig" --dbpath /data/configdb
+docker run -d -p 27023:27023 --net mongonet --ip 11.0.0.39 -v volConfig3:/data/db --name config3 mongo mongod --port 27023 --configsvr --replSet "RPSConfig" --dbpath /data/configdb
+
+// ingresamos a un servidor de configuracion, y solo a uno
+docker exec -it config2 bash
+mongo 127.0.0.1:<puerto>
+
+// hacerle init al servicio de replica set para que haya replicacion entre los servidores de configuracion
+
+rs.initiate({
+   "_id":"RPSConfig",
+   "configsvr":true,
+   "members":[
+     {
+         "_id":0,
+         "host":"25.6.236.207:27019"
+      },
+      {
+         "_id":1,
+         "host":"25.6.225.17:27018"
+      },
+      {
+         "_id":2,
+         "host":"25.7.237.232:27023"
+      }
+   ]
+});
+
+// revisar instruccion rs.slaveOk() rs.secondaryOk()
+// ejecutar rs.status() // me entrega estadisticas del estado de la replicacion
+
+----------------------------------------------------------------------------------------
+
+// inicializo shards y asignarlos a una replica, replica que aun no está activa pero se declara cual es
+
+docker volume create volAmerica1
+docker volume create volAmerica2
+docker volume create volEurasia1
+docker volume create volEurasia2
+
+
+docker run -d -p 27022:27022 --net mongonet --ip 11.0.0.38 -v volAmerica1:/data/db --name americaShard1 mongo mongod --port 27022 --shardsvr --replSet "repAmerica" --dbpath /data/db
+docker run -d -p 27025:27025 --net mongonet --ip 11.0.0.41 -v volAmerica2:/data/db --name americaShard2 mongo mongod --port 27025 --shardsvr --replSet "repAmerica" --dbpath /data/db
+
+docker run -d -p 27021:27021 --net mongonet --ip 11.0.0.37 -v volEurasia1:/data/db --name eurasiaShard1 mongo mongod --port 27021 --shardsvr --replSet "repEurasia" --dbpath /data/db
+docker run -d -p 27024:27024 --net mongonet --ip 11.0.0.40 -v volEurasia2:/data/db --name eurasiaShard2 mongo mongod --port 27024 --shardsvr --replSet "repEurasia" --dbpath /data/db
+
+
+// conectarse a uno de los servidores e inicializar la replica entre ellos
+
+
+----------------------------------------------------------------------------------------
+
+docker exec -it americaShard1 bash
+mongo 127.0.0.1:27022  
+// me conecto a un shardserver que sea miembro de la repAmerica para inicializar la rep
+
+rs.initiate(
+  {
+    _id : "repAmerica",
+    members: [
+      { _id : 0, host : "25.6.225.17:27022" },
+      { _id : 1, host : "25.7.237.232:27025" }
+    ]
+  }
+);
+
+
+--------------------------------------------
+
+docker exec -it eurasiaShard1 bash
+mongo 127.0.0.1:27021  
+// me conecto a un shardserver que sea miembro de la repAmerica para inicializar la rep
+
+rs.initiate(
+  {
+    _id : "repEurasia",
+    members: [
+      { _id : 0, host : "25.6.225.17:27021" },
+      { _id : 1, host : "25.7.237.232:27024" }
+    ]
+  }
+);
+
+--------------------------------------------
+
+docker run -d -p 27032:27032 --net mongonet --ip 11.0.0.48 --name americaShardArb mongo mongod --port 27032 --replSet repAmerica 
+docker run -d -p 27027:27027 --net mongonet --ip 11.0.0.43 --name eurasiaShardArb mongo mongod --port 27027 --replSet repEurasia
+
+
+docker exec -it americaShard2 bash
+mongo 127.0.0.1:27025
+rs.addArb("25.6.225.17:27032") 
+
+exit
+exit
+
+docker exec -it eurasiaShard1 bash
+mongo 127.0.0.1:27021
+rs.addArb("25.7.237.232:27027")
+
+
+----------------------------------------------------------------------------------------
+
+// vamos a inicializar el router1 indicando cuales son los servidores de configuracion
+docker run -d -p 27030:27030 --net mongonet --ip 11.0.0.46 --name router1 mongo mongos --bind_ip_all --port 27030 --configdb RPSConfig/25.6.225.17:27018,25.6.236.207:27019,25.7.237.232:27023
+
+
+// vamos a inicializar el router2 indicando cuales son los servidores de configuracion
+docker run -d -p 27031:27031 --net mongonet --ip 11.0.0.47 --name router2 mongo mongos --bind_ip_all --port 27031 --configdb RPSConfig/25.6.225.17:27018,25.6.236.207:27019,25.7.237.232:27023
+
+docker run -d -p 27036:27036 --net mongonet --ip 11.0.0.49 --name router2 mongo mongos --bind_ip_all --port 27036 --configdb RPSConfig/25.6.225.17:27018,25.6.236.207:27019,25.7.237.232:27023
+
+------------------------------------------------------------------------------------------------------------
+
+// conectamos al router
+docker exec -it router1 bash
+hacemos shards con un server en cada replica, no hace faltan los otros porque ya estan en replica entre si
+sh.addShard("repAmerica/25.6.225.17:27022");  
+sh.addShard("repEurasia/25.6.225.17:27021");
+
+
+sh.status();
+
+--------------------------------------------
+
+// conectamos al router 2
+docker exec -it router2 mongo 127.0.0.1:27031
+
+hacemos shards con un server en cada replica, no hace faltan los otros porque ya estan en replica entre si
+sh.addShard("repAmerica/25.6.225.17:27022");  
+sh.addShard("repEurasia/25.6.225.17:27021");
+
+sh.status();
+
+
+----------------------------------------------------------------------------------------
+
+
+ya tenemos las replicas listas, el router ya se le dijo cuales son los shardservers
+procedemos a configurar la distribucion de datos del shard
+
+conectarnos al router y probamos
+
+// hagan esta parte de distribuir por configuracion los cursos que son de una sede u otra
+// para hacer distribucion manual de datos se puede hacer por shardkeys de rangos o con shard tags
+// desde el routeruse videojuegos
+
+
+sh.addShardTag("repAmerica", "America");
+sh.addShardTag("repEurasia", "Europa");
+
+sh.addTagRange( "videojuegos.ventas",
+                { region: "America"},
+                { region: "America9999"},
+                "America"
+              );
+
+
+sh.addTagRange( "videojuegos.ventas",
+                { region: "Europa"},
+                { region: "Europa9999"},
+                "Europa"
+              );
+
+
+use videojuegos
+
+sh.enableSharding("videojuegos");
+
+sh.shardCollection("videojuegos.ventas", { "region" : 1 } );
+
+-----------------------------------------------------------------------------------------------------------------------------------------
+//Para probar la funcionalidad del Cluster proceda a lo siguiente
+
+//Inserta datos de prueba con los shard tags
+
+use videojuegos
+db.ventas.insert(
+  {
+    "name":"Mario",
+    "sales":1000,
+    "region":"Europa"
+  }
+)
+
+use videojuegos
+db.ventas.insertOne(
+  {
+    "name":"Sonic",
+    "sales":1000,
+    "region":"America"
+  }
+)
+
+db.ventas.insert(
+  {
+    "name":"Megaman",
+    "sales":1000,
+    "region":"Europa"
+  }
+)
+
+db.ventas.insert(
+  {
+    "name":"Phoenix Wright",
+    "sales":1000,
+    "region":"Other"
+  }
+)
+
+
+db.ventas.find().pretty()
+
+
+Probar el sharding y la replica que funcionan correctamente
+
+//Ingrese al shard de america 
+docker exec -it americaShard2 bash
+mongo 127.0.0.1:27025
+
+//ejecute un find
+db.ventas.find().pretty()
+
+//Devuelve solo el resultado del tag "America"
+  {
+    "name":"Sonic",
+    "sales":1000,
+    "region":"America"
+  }
+
+
+//Para comprobar el funcionamiento de los replica set 
+//Apague uno de los shards 
+
+docker stop americaShard2
+
+//Ingrese al router
+docker exec -it router1 bash
+
+//Hacer un find devuelve los mismos resultados
+use videojuegos
+db.ventas.find().pretty()
+
+//Apagar el segundo shard
+docker stop americaShard1
+
+//Hacer un find ya no devuelve nada
+use videojuegos
+db.ventas.find().pretty()
+
+
+// para iniciar lo ideal es: luego los de sharding, luero arb, luego config y finalmente routers
+
+ ****   Oswaldo:
+
+docker start eurasiaShard1
+docker start americaShard1
+docker start americaShardArb
+docker start config2
+
+docker stop americaShardArb
+docker stop eurasiaShard1
+docker stop americaShard1
+docker stop config2
+
+
+ ****   Melina:
+docker start router2
+docker start config1
+
+docker stop router2
+docker start config1
+
+
+ ****   Sebas:
+docker start americaShard2
+docker start eurasiaShardArb
+docker start eurasiaShard2
+docker start config3
+docker start router1
+
+docker stop router1
+docker stop eurasiaShardArb
+docker stop americaShard2
+docker stop eurasiaShard2
+docker stop config3
+
+
+
+
+
+
+
+/*  
+        .--'''''''''--.
+     .'      .---.      '.
+    /    .-----------.    \
+   /        .-----.        \
+   |       .-.   .-.       |
+   |      /   \ /   \      |
+    \    | .-. | .-. |    /
+     '-._| |*| | |*| |_.-'
+         | '-' | '-' |
+          \___/ \___/
+       _.-'  /   \  `-._
+     .' _.--|     |--._ '.
+     ' _...-|     |-..._ '
+            |     |
+            '.___.'
+              | |
+
+*/

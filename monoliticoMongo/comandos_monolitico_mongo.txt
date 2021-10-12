@@ -1,0 +1,9 @@
+para crear el monolitico:
+
+docker run -d -p 27028:27028 --net mongonet --ip 11.0.0.44 --name MonoliticoMongo mongo mongod --port 27028
+
+para correrlo:
+
+docker exec -it MonoliticoMongo bash
+
+mongo 127.0.0.1:27028

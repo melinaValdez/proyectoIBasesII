@@ -1,0 +1,6 @@
+//Monolitico de SQL
+netsh interface portproxy add v4tov4 listenaddress=25.7.237.232 listenport=2255 connectaddress=25.6.225.17 connectport=1433
+
+
+//Monolitico de Mongo
+netsh interface portproxy add v4tov4 listenaddress=25.7.237.232 listenport=2257 connectaddress=25.6.225.17 connectport=27028

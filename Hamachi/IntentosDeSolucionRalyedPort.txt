@@ -1,0 +1,25 @@
+Intentos de tutoriales para arreglar el problema de Relayed Tunnel:
+
+
+https://support.logmeininc.com/central/help/why-do-i-get-request-timed-out-when-trying-to-ping-a-computer
+
+
+https://www.youtube.com/watch?v=wiyj4WTZpWQ
+
+
+https://technical-tips.com/blog/software/hamachi-how-to-fix-the-20286
+
+
+https://appuals.com/how-to-fix-the-hamachi-tunnel-problem-on-windows/
+
+
+https://www.youtube.com/watch?v=muhemMHTeHc
+
+
+https://www.soluciones.si/blog/2016/08/22/solucion-al-error-de-tunel-retransmitido-punto-azul-de-hamachi/
+
+
+https://community.logmein.com/t5/LogMeIn-Hamachi-Discussions/Relayed-tunnel-and-no-solution-how-to-fix-it/td-p/135848
+
+
+https://www.reddit.com/r/techsupport/comments/1ddu1z/logmein_hamachi_relay_tunnel/
