@@ -1,0 +1,12 @@
+timeStamp,elapsed,label,responseCode,responseMessage,threadName,dataType,success,failureMessage,bytes,sentBytes,grpThreads,allThreads,URL,Latency,IdleTime,Connect
+1.63407E+12,15171,Select de todos los registros,200,OK,Thread Group 1-1,text,true,,6905284,0,1,1,null,0,0,0
+1.63407E+12,14894,Select de todos los registros,200,OK,Thread Group 1-1,text,true,,6905284,0,1,1,null,0,0,0
+1.63407E+12,14712,Select de todos los registros,200,OK,Thread Group 1-1,text,true,,6905284,0,1,1,null,0,0,0
+1.63407E+12,15052,Select de todos los registros,200,OK,Thread Group 1-1,text,true,,6905284,0,1,1,null,0,0,0
+1.63407E+12,14795,Select de todos los registros,200,OK,Thread Group 1-1,text,true,,6905284,0,1,1,null,0,0,0
+1.63407E+12,14682,Select de todos los registros,200,OK,Thread Group 1-1,text,true,,6905284,0,1,1,null,0,0,0
+1.63407E+12,15202,Select de todos los registros,200,OK,Thread Group 1-1,text,true,,6905284,0,1,1,null,0,0,0
+1.63407E+12,15020,Select de todos los registros,200,OK,Thread Group 1-1,text,true,,6905284,0,1,1,null,0,0,0
+1.63407E+12,14797,Select de todos los registros,200,OK,Thread Group 1-1,text,true,,6905284,0,1,1,null,0,0,0
+1.63407E+12,14801,Select de todos los registros,200,OK,Thread Group 1-1,text,true,,6905284,0,1,1,null,0,0,0
+1.63407E+12,14931,Select de todos los registros,200,OK,Thread Group 1-1,text,true,,6905284,0,1,1,null,0,0,0

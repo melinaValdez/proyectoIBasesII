@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jmeterTestPlan version="1.2" properties="5.0" jmeter="5.4.1">
+  <hashTree>
+    <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="Test Plan" enabled="true">
+      <stringProp name="TestPlan.comments"></stringProp>
+      <boolProp name="TestPlan.functional_mode">false</boolProp>
+      <boolProp name="TestPlan.tearDown_on_shutdown">true</boolProp>
+      <boolProp name="TestPlan.serialize_threadgroups">false</boolProp>
+      <elementProp name="TestPlan.user_defined_variables" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
+        <collectionProp name="Arguments.arguments"/>
+      </elementProp>
+      <stringProp name="TestPlan.user_define_classpath"></stringProp>
+    </TestPlan>
+    <hashTree>
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Thread Group" enabled="true">
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller" enabled="true">
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+          <stringProp name="LoopController.loops">1</stringProp>
+        </elementProp>
+        <stringProp name="ThreadGroup.num_threads">5</stringProp>
+        <stringProp name="ThreadGroup.ramp_time">10</stringProp>
+        <boolProp name="ThreadGroup.scheduler">false</boolProp>
+        <stringProp name="ThreadGroup.duration"></stringProp>
+        <stringProp name="ThreadGroup.delay"></stringProp>
+        <boolProp name="ThreadGroup.same_user_on_next_iteration">true</boolProp>
+      </ThreadGroup>
+      <hashTree>
+        <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Conectarse a DB Monolitico Mongo" enabled="true">
+          <stringProp name="cacheKey">true</stringProp>
+          <stringProp name="filename"></stringProp>
+          <stringProp name="parameters"></stringProp>
+          <stringProp name="script">import com.mongodb.*
+import com.mongodb.client.MongoClients;
+import com.mongodb.client.MongoClient;
+import com.mongodb.MongoClientSettings;
+import com.mongodb.ServerAddress;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoDatabase;
+import org.bson.Document;
+import java.util.Arrays;
+
+try {
+ MongoClientSettings settings = MongoClientSettings.builder()
+  .applyToClusterSettings {builder -&gt; 
+   builder.hosts(Arrays.asList(new ServerAddress(vars.get(&quot;mongoHost&quot;),vars.get(&quot;mongoPort&quot;).toInteger())))}
+  .build();
+ 
+ MongoClient mongoClient = MongoClients.create(settings);
+ MongoDatabase database = mongoClient.getDatabase(vars.get(&quot;databaseName&quot;));
+ MongoCollection&lt;Document&gt; collection = database.getCollection(vars.get(&quot;collectionName&quot;));
+ vars.putObject(&quot;collection&quot;, collection);
+ return &quot;Coleccion siendo usada: &quot; + vars.get(&quot;collectionName&quot;);
+ 
+}
+catch (Exception e) {
+ SampleResult.setSuccessful(false);
+ SampleResult.setResponseCode(&quot;500&quot;);
+ SampleResult.setResponseMessage(&quot;Exception: &quot; + e);
+}</stringProp>
+          <stringProp name="scriptLanguage">groovy</stringProp>
+        </JSR223Sampler>
+        <hashTree/>
+        <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Select de todos los registros" enabled="true">
+          <stringProp name="scriptLanguage">groovy</stringProp>
+          <stringProp name="parameters"></stringProp>
+          <stringProp name="filename"></stringProp>
+          <stringProp name="cacheKey">true</stringProp>
+          <stringProp name="script">import com.mongodb.client.MongoCollection;
+import static com.mongodb.client.model.Filters.*;
+import org.bson.Document;
+import org.bson.types.ObjectId;
+try {
+ MongoCollection&lt;Document&gt; collection = vars.getObject(&quot;collection&quot;);
+List&lt;Document&gt; todos_documentos = collection.find(or(eq(&quot;Region&quot;,&quot;America&quot;),eq(&quot;Region&quot;,&quot;Europa&quot;))).toList();
+
+ 
+ return todos_documentos.inspect();
+}
+catch (Exception e) {
+ SampleResult.setSuccessful(false);
+ SampleResult.setResponseCode(&quot;500&quot;);
+ SampleResult.setResponseMessage(&quot;Exception: &quot; + e);
+}</stringProp>
+        </JSR223Sampler>
+        <hashTree/>
+        <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Select de 3000 registros" enabled="false">
+          <stringProp name="scriptLanguage">groovy</stringProp>
+          <stringProp name="parameters"></stringProp>
+          <stringProp name="filename"></stringProp>
+          <stringProp name="cacheKey">true</stringProp>
+          <stringProp name="script">import com.mongodb.client.MongoCollection;
+import static com.mongodb.client.model.Filters.*;
+import org.bson.Document;
+import org.bson.types.ObjectId;
+try {
+ MongoCollection&lt;Document&gt; collection = vars.getObject(&quot;collection&quot;);
+List&lt;Document&gt; sublist_documentos = (collection.find(or(eq(&quot;Region&quot;,&quot;America&quot;),eq(&quot;Region&quot;,&quot;Europa&quot;))).toList()).subList(0,3000);
+
+ 
+ return sublist_documentos.inspect();
+}
+catch (Exception e) {
+ SampleResult.setSuccessful(false);
+ SampleResult.setResponseCode(&quot;500&quot;);
+ SampleResult.setResponseMessage(&quot;Exception: &quot; + e);
+}</stringProp>
+        </JSR223Sampler>
+        <hashTree/>
+        <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="View Results Tree" enabled="true">
+          <boolProp name="ResultCollector.error_logging">false</boolProp>
+          <objProp>
+            <name>saveConfig</name>
+            <value class="SampleSaveConfiguration">
+              <time>true</time>
+              <latency>true</latency>
+              <timestamp>true</timestamp>
+              <success>true</success>
+              <label>true</label>
+              <code>true</code>
+              <message>true</message>
+              <threadName>true</threadName>
+              <dataType>true</dataType>
+              <encoding>false</encoding>
+              <assertions>true</assertions>
+              <subresults>true</subresults>
+              <responseData>false</responseData>
+              <samplerData>false</samplerData>
+              <xml>false</xml>
+              <fieldNames>true</fieldNames>
+              <responseHeaders>false</responseHeaders>
+              <requestHeaders>false</requestHeaders>
+              <responseDataOnError>false</responseDataOnError>
+              <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
+              <assertionsResultsToSave>0</assertionsResultsToSave>
+              <bytes>true</bytes>
+              <sentBytes>true</sentBytes>
+              <url>true</url>
+              <threadCounts>true</threadCounts>
+              <idleTime>true</idleTime>
+              <connectTime>true</connectTime>
+            </value>
+          </objProp>
+          <stringProp name="filename">W:\Bodega\JMETER\RESULTADOS_FINAL\MonoliticoMongo\mongo_america_europa_1.csv</stringProp>
+        </ResultCollector>
+        <hashTree/>
+        <Arguments guiclass="ArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
+          <collectionProp name="Arguments.arguments">
+            <elementProp name="mongoHost" elementType="Argument">
+              <stringProp name="Argument.name">mongoHost</stringProp>
+              <stringProp name="Argument.value">25.8.239.164</stringProp>
+              <stringProp name="Argument.metadata">=</stringProp>
+            </elementProp>
+            <elementProp name="mongoPort" elementType="Argument">
+              <stringProp name="Argument.name">mongoPort</stringProp>
+              <stringProp name="Argument.value">2257</stringProp>
+              <stringProp name="Argument.metadata">=</stringProp>
+            </elementProp>
+            <elementProp name="databaseName" elementType="Argument">
+              <stringProp name="Argument.name">databaseName</stringProp>
+              <stringProp name="Argument.value">videojuegos</stringProp>
+              <stringProp name="Argument.metadata">=</stringProp>
+            </elementProp>
+            <elementProp name="collectionName" elementType="Argument">
+              <stringProp name="Argument.name">collectionName</stringProp>
+              <stringProp name="Argument.value">ventas</stringProp>
+              <stringProp name="Argument.metadata">=</stringProp>
+            </elementProp>
+          </collectionProp>
+        </Arguments>
+        <hashTree/>
+      </hashTree>
+    </hashTree>
+  </hashTree>
+</jmeterTestPlan>
