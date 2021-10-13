@@ -1,9 +1,17 @@
 # Proyecto I Bases II
-Oswaldo
-Melina
-Sebastián
+Sebastián Alpizar Morales - 2019187543<br>
+Melina Valdez Calderón - 2016077990 <br>
+Oswaldo - <br>
 
 Para este proyecto se realizó un análisis de eficiencia de tres diferentes modelos de bases de datos: Monolítico SQL, Monolítico de Mongo y Sharded Cluster de Mongo. 
+
+<h2><b>Información Relevnte</b></h2>
+El presente proyecto solo se realizó con 3 personas, por lo que el número de shards disminuyó de 3 a 2. Esto incluye una disminución en el número de shard tags por una limitante de los rangos del método de sh.shardCollection de mongo el cuál no aceptaba que 2 tags distintos pertenezcan a un mismo shard.
+
+<br>
+<br>
+
+<h2>Descripción</h2>
 
 Este proyecto se realizó por medio de la tecnología de docker. Los datos utilizados fueron obtenidos de: https://www.kaggle.com/joshuadottavio/videogamesales donde se obtuvo un dataset con 66392 datos exactos que se utilizaron para popular las bases de datos. Para el proceso de la carga del .csv se utilizó Logstash como medio de procesamiento y envío de los datos. 
 
@@ -36,7 +44,7 @@ Esta llamada consiste en llamar al 3000 registros con la región "América". Est
 <br>
 
 <h2>Llamada con 3000 registros 2 Shards - Cluster 100%</h2>
-Esta llamada consiste en llamar al 3000 registros con la región "América" y "Europa" para ver el tiempo de una operación AND. Esto se realiza tanto en el monolítico SQL como en el monolítico de Mongo para comparar velocidades. En este caso, el servidor de SQL inicia con una alta velocidad de tan solo 5000ms pero conforme se elevan las llamadas adquiere mayor peso de solicitudes y se entorpece su respuesta en un ~83% en comparación a la respuesta inicial. Mientras que el monolítico de mongo se mantiene constante en aproximademente 20k ms y el cluster en 30k. 
+Esta llamada consiste en llamar al 3000 registros con la región "América" y "Europa" para ver el tiempo de una operación OR. Esto se realiza tanto en el monolítico SQL como en el monolítico de Mongo para comparar velocidades. En este caso, el servidor de SQL inicia con una alta velocidad de tan solo 5000ms pero conforme se elevan las llamadas adquiere mayor peso de solicitudes y se entorpece su respuesta en un ~83% en comparación a la respuesta inicial. Mientras que el monolítico de mongo se mantiene constante en aproximademente 20k ms y el cluster en 30k. 
 
 ![Chart2Shard100](https://i.ibb.co/VDVyRJd/America-Europa.png)
 
@@ -45,9 +53,14 @@ Esta llamada consiste en llamar al 3000 registros con la región "América" y "E
 <br>
 
 <h2>Llamada con 3000 registros 1 Shard - Cluster 50%</h2>
+Esta llamada consiste en llamar al 3000 registros con la región "América". Esto se realiza tanto en el monolítico SQL como en el monolítico de Mongo para comparar velocidades. En este caso el Cluster está a 50% de operabilidad. En este caso con el sistema funcionando a medias el cluster se disminuye con un tiempo de consulta ~46% menos que cuando el cluster está al 100%. Lo que deja en claro una menor carga del lado del cluster para resolver las solicitudes. En cambio, el monolítico de mongo que mantiene eestable en una velocidad parecida a las anteriores (~10k ms). El monolítico de SQL igual se mantiene con esta velocidad aproximada de ~10k ms.
 
+![Chart1Shard50](https://i.ibb.co/Yj4ttvT/America.png)
 
 <br>
 <br>
 
 <h2>Llamada con 3000 registros 2 Shards - Cluster 50%</h2>
+Esta llamada consiste en llamar al 3000 registros con la región "América" y "Europa" para ver el tiempo de una operación OR. Esto se realiza tanto en el monolítico SQL como en el monolítico de Mongo para comparar velocidades. En este caso con el cluster al 50% podemos ver que se mantiene el tiempo de ~30k ms de las solicitudes, lo que indica menos variación que cuando se buscó con un único shard. Y comparado con la prueba del cluster al 100%, el server monolítico de SQL sigue disparándose en tiempos entre más aumentan las solicitudes superando los esperados ~30k ms que obtiene el cluster en esta prueba. 
+
+![Chart1Shard50](https://i.ibb.co/cTB0SQn/Europa-America.png)
