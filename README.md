@@ -1,7 +1,7 @@
 # Proyecto I Bases II
 Sebastián Alpizar Morales - 2019187543<br>
 Melina Valdez Calderón - 2016077990 <br>
-Oswaldo - <br>
+Oswaldo Ramírez Fernández- <br>
 
 Para este proyecto se realizó un análisis de eficiencia de tres diferentes modelos de bases de datos: Monolítico SQL, Monolítico de Mongo y Sharded Cluster de Mongo. 
 
