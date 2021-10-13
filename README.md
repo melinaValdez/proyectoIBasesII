@@ -5,7 +5,7 @@ Oswaldo Ramírez Fernández- <br>
 
 Para este proyecto se realizó un análisis de eficiencia de tres diferentes modelos de bases de datos: Monolítico SQL, Monolítico de Mongo y Sharded Cluster de Mongo. 
 
-<h2><b>Información Relevnte</b></h2>
+<h2><b>Información Relevante</b></h2>
 El presente proyecto solo se realizó con 3 personas, por lo que el número de shards disminuyó de 3 a 2. Esto incluye una disminución en el número de shard tags por una limitante de los rangos del método de sh.shardCollection de mongo el cuál no aceptaba que 2 tags distintos pertenezcan a un mismo shard.
 
 <br>
